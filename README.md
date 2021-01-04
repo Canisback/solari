@@ -1,5 +1,7 @@
 # Solari
 
+[![PyPi](https://img.shields.io/pypi/v/solari)](https://pypi.org/project/solari/)
+
 ***
 
 ## Stats module for League of Legends
@@ -15,6 +17,12 @@ This library aims to manage stats from League of Legends match data in bulk in a
 ***
 
 ## How to use it
+
+To install it : 
+
+```
+pip3 install solari
+```
 
 This library revolves around a Manager, here the Leona class, and a library of stats, that can sometime be configured.
 
