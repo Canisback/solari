@@ -76,12 +76,13 @@ l = Leona([
  * Request match data : the role of this library only starts when you have the data
  * Change ID to name : this would require ddragon/cdragon and can easily be done afterward
 
+More examples : https://github.com/Canisback/solari/blob/master/advanced_docs.md
 
 ## TODO
 
 By order of priority :
 
-1. Implementing the "per_league" key, allowing stats to be grouped by players rank as well
+1. ~~Implementing the "per_league" key, allowing stats to be grouped by players rank as well~~
 2. Add more documentation on how to add Stats
 3. Add verification for DerivedStats required stats
 4. Implementing more stats for champion and items

@@ -11,6 +11,9 @@ class ChampionGeneric(ChampionStats):
         
     name : string, optional
         Rename the stats, default is the name of the field
+        
+    by_league : boolean
+        Default at False, determine if the stats groups by league.
     
     """
     
@@ -27,7 +30,7 @@ class ChampionGeneric(ChampionStats):
         self._by_league = by_league
     
     def get_keys(self):
-        return ("championId",)
+        return ("league","championId",) if self._by_league else ("championId",)
     
     def get_manager(self):
         return ChampionStatsManager
@@ -45,7 +48,8 @@ class ChampionGeneric(ChampionStats):
         return ["summonerId"] if self._by_league else []
     
     def get_stats(self, df):
-        return df.groupby("championId").mean()[self._field]
+        groupby = list(self.get_keys())
+        return df.groupby(groupby).mean()[self._field]
 
     
 class ChampionGenericPerMin(ChampionStats):
@@ -58,6 +62,9 @@ class ChampionGenericPerMin(ChampionStats):
         
     name : string, optional
         Rename the stats, default is the name of the field
+        
+    by_league : boolean
+        Default at False, determine if the stats groups by league.
     
     """
     
@@ -74,7 +81,7 @@ class ChampionGenericPerMin(ChampionStats):
         self._by_league = by_league
     
     def get_keys(self):
-        return ("championId",)
+        return ("league","championId",) if self._by_league else ("championId",)
     
     def get_manager(self):
         return ChampionStatsManager
@@ -92,14 +99,19 @@ class ChampionGenericPerMin(ChampionStats):
         return ["summonerId"] if self._by_league else []
     
     def get_stats(self, df):
+        groupby = list(self.get_keys())
         df[self._field + "PerMin"] = df[self._field] / (df["gameDuration"] / 60)
-        return df.groupby("championId").mean()[self._field + "PerMin"]
+        return df.groupby(groupby).mean()[self._field + "PerMin"]
 
 class ChampionKDA(ChampionStats):
     """Stats for mean KDA per champion
     
     If the number of deaths is 0, to avoid division by 0, the number of deaths is set to 1.
     
+    Parameters
+    ----------
+    by_league : boolean
+        Default at False, determine if the stats groups by league.
     """
     
     name = "KDA"
@@ -108,7 +120,7 @@ class ChampionKDA(ChampionStats):
         self._by_league = by_league
     
     def get_keys(self):
-        return ("championId",)
+        return ("league","championId",) if self._by_league else ("championId",)
     
     def get_manager(self):
         return ChampionStatsManager
@@ -126,14 +138,20 @@ class ChampionKDA(ChampionStats):
         return ["summonerId"] if self._by_league else []
     
     def get_stats(self, df):
+        groupby = list(self.get_keys())
+        
         df["KDA"] = (df["kills"] + df["assists"]) / (df["deaths"].replace(0,1))
         
-        return df.groupby("championId").mean()["KDA"]
+        return df.groupby(groupby).mean()["KDA"]
 
     
 class ChampionKillParticipation(ChampionStats):
     """Stats for mean Kill Participation per champion
     
+    Parameters
+    ----------
+    by_league : boolean
+        Default at False, determine if the stats groups by league.
     """
     
     name = "KP"
@@ -142,7 +160,7 @@ class ChampionKillParticipation(ChampionStats):
         self._by_league = by_league
     
     def get_keys(self):
-        return ("championId",)
+        return ("league","championId",) if self._by_league else ("championId",)
     
     def get_manager(self):
         return ChampionStatsManager
@@ -160,8 +178,10 @@ class ChampionKillParticipation(ChampionStats):
         return ["summonerId"] if self._by_league else []
     
     def get_stats(self, df):
+        groupby = list(self.get_keys())
+        
         kp = df.groupby(["gameId","teamId"]).sum()["kills"]
         
         df["kp"] = df["kills"] / [kp.loc[(i["gameId"],i["teamId"])] for k,i in df.iterrows()]
         
-        return df.groupby("championId").mean()["kp"]
+        return df.groupby(groupby).mean()["kp"]

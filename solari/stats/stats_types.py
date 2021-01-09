@@ -101,6 +101,16 @@ class SpecialStats(Stats):
     
     def get_stats(self):
         pass
+    
+    def set_rank_manager(self, rank_manager):
+        """Set the rank manager for when needed
+        
+        Parameters
+        ----------
+        rank_manager : RankManager
+            Object containing players rank
+        """
+        self._rank_manager = rank_manager
 
 class DerivedStats(Stats):
     """Abstract class defining a Stats that is derived from another and must be computed afterward
