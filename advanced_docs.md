@@ -90,7 +90,7 @@ l.set_players_rank(players_rank)
 # 2) Push league data
 # Consider leagues a list containing results from the Riot API league by leagueId endpoint
 for league_data in leagues:
-    l.push_match(push_league)
+    l.push_league(push_league)
     
 l.get_stats()
 ```
