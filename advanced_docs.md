@@ -94,3 +94,22 @@ for league_data in leagues:
     
 l.get_stats()
 ```
+
+Stats by player are also possible. Only for pickrate, winrate and winrate per champion (for now) : 
+
+```python
+from solari.stats import PlayerPickrate, PlayerWinrate
+from solari import Leona
+
+l = Leona([
+    PlayerPickrate(),
+    PlayerWinrate(by_champion=True)
+])
+
+
+# Consider matches a list containing results from the Riot API match endpoint
+for match_data in matches:
+    l.push_match(match_data)
+
+l.get_stats()
+```
