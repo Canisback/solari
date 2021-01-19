@@ -38,11 +38,17 @@ class ItemPickrate(ItemStats):
     def get_manager(self):
         return ItemStatsManager
     
+    def get_stats_fields_required(self):
+        return []
+    
     def get_game_fields_required(self):
         return ["gameId"]
     
     def get_participant_fields_required(self):
-        return ["participantId"] if not self._by_champion else ["championId"]
+        f = ["participantId"]
+        if self._by_champion:
+            f += ["championId"]
+        return  f
     
     def get_id_fields_required(self):
         return ["summonerId"] if self._by_league else []
@@ -51,16 +57,16 @@ class ItemPickrate(ItemStats):
         groupby = list(self.get_keys())
         
         picks = (
-            df.drop_duplicates(subset=["championId","win","gameId","itemId"]).groupby(groupby)
+            df.drop_duplicates(subset=["participantId","gameId","itemId"]).groupby(groupby)
                 .count()
                 ["gameId"]
         )
         
         opportunities = (
-            df.drop_duplicates(subset=["championId","win","gameId"]).groupby(groupby[:-1])
+            df.drop_duplicates(subset=["participantId","gameId"]).groupby(groupby[:-1])
                 .count()
                 ["gameId"]
-        ) if self._by_league or self._by_champion else len(df["gameId"].unique())
+        ) if self._by_league or self._by_champion else len(df["gameId"].unique()) * 10
         
         return picks/opportunities
     
@@ -106,7 +112,10 @@ class ItemWinrate(ItemStats):
         return ["gameId"]
     
     def get_participant_fields_required(self):
-        return [] if not self._by_champion else ["championId"]
+        f = ["participantId"]
+        if self._by_champion:
+            f += ["championId"]
+        return  f
     
     def get_stats_fields_required(self):
         return ["win"]
@@ -118,17 +127,17 @@ class ItemWinrate(ItemStats):
         groupby = list(self.get_keys())
         
         picks = (
-            df.groupby(groupby)
+            df.drop_duplicates(subset=["participantId","gameId","itemId"]).groupby(groupby)
                 .count()
                 ["gameId"]
         )
         
         wins = (
-            df[df["win"]]
+            df.drop_duplicates(subset=["participantId","gameId","itemId"]).query('win == True')
                 .groupby(groupby)
                 .count()
                 ["gameId"]
         )
 
-        return (wins/picks).fillna(0).sort_values(ascending=False)
+        return (wins/picks).fillna(0)
     

@@ -85,8 +85,36 @@ class ChampionStats(Stats):
     """
     pass
 
+class ChampionBanStats(Stats):
+    """Abstract class defining a Stats for Champions bans
+    
+    """
+    def get_stats(self, dfs):
+        """Return the computed stats
+        
+        Parameters
+        ----------
+        dfs : tuple of Pandas DataFrames (df, df_bans)
+            df :Pandas DataFrame
+                DataFrame containing all fields required to compute the stats
+            df_bans: Pandas DataFrame
+                DataFrame containing bans information to compute the stats
+            
+        Returns
+        -------
+        stats : Pandas Series
+            Value oif the computed stats grouped by the key
+        """
+        pass
+
 class ItemStats(Stats):
     """Abstract class defining a Stats for Items
+    
+    """
+    pass
+
+class PlayerStats(Stats):
+    """Abstract class defining a Stats for Players
     
     """
     pass

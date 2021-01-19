@@ -9,6 +9,7 @@ with open(path.join(this_directory, "README.md"), encoding="utf-8") as f:
 setup(
     name="solari",
     packages=find_packages(),
+    python_requires='>=3.8',
     version="0.0.1a2",
     install_requires=["pandas"],
     description="Library for high level statistical analysis on bulk match data",

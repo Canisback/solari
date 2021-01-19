@@ -182,6 +182,6 @@ class ChampionKillParticipation(ChampionStats):
         
         kp = df.groupby(["gameId","teamId"]).sum()["kills"]
         
-        df["kp"] = df["kills"] / [kp.loc[(i["gameId"],i["teamId"])] for k,i in df.iterrows()]
+        df["kp"] = (df["kills"] + df["assists"]) / [kp.loc[(i["gameId"],i["teamId"])] for k,i in df.iterrows()]
         
         return df.groupby(groupby).mean()["kp"]

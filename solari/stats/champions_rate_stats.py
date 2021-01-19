@@ -1,14 +1,15 @@
-from .stats_types import ChampionStats, SpecialStats, DerivedStats
-from .stats_managers import ChampionStatsManager
+from .stats_types import ChampionStats, SpecialStats, DerivedStats, ChampionBanStats
+from .stats_managers import ChampionStatsManager, ChampionDuplicateStatsManager
 
 import pandas as pd
+from functools import lru_cache
     
 class ChampionPickrate(ChampionStats):
     """Stats for pickrate per champion
     
-    Count the number of times a champion is picked, divided by the number of games, then multiplied by 10 (number of players per game).
+    Count the number of times a champion is picked, divided by the number of games.
     
-    When computed per league, the strategy is to count the number of time a champion is picked by a player with a league, divided by the total number of champions picked by players in the same league, then multipled by 10.
+    When computed per league, the strategy is to count the number of time a champion is picked by a player with a league, divided by the total number of champions picked by players in the same league.
     
     Parameters
     ----------
@@ -25,6 +26,8 @@ class ChampionPickrate(ChampionStats):
         return ("league","championId",) if self._by_league else ("championId",)
     
     def get_manager(self):
+        if self._by_league:
+            return ChampionDuplicateStatsManager
         return ChampionStatsManager
     
     def get_game_fields_required(self):
@@ -49,10 +52,10 @@ class ChampionPickrate(ChampionStats):
             df.groupby(["league"])
                 .count()
                 ["gameId"]
-        ) if self._by_league else len(df["gameId"].unique())
+        ) / 10 if self._by_league else len(df["gameId"].unique())
 
         
-        return (picks/opportunities) * 10
+        return (picks/opportunities)
     
 class ChampionPickCount(ChampionStats):
     """Stats for number of picks per champion
@@ -64,7 +67,7 @@ class ChampionPickCount(ChampionStats):
     by_league : boolean
         Default at False, determine if the stats groups by league.
     """
-    name = "Count"
+    name = "Pick Count"
     
     def __init__(self, by_league = False):
         self._by_league = by_league
@@ -73,6 +76,8 @@ class ChampionPickCount(ChampionStats):
         return ("league","championId",) if self._by_league else ("championId",)
     
     def get_manager(self):
+        if self._by_league:
+            return ChampionDuplicateStatsManager
         return ChampionStatsManager
     
     def get_game_fields_required(self):
@@ -114,6 +119,8 @@ class ChampionWinrate(ChampionStats):
         return ("league","championId",) if self._by_league else ("championId",)
     
     def get_manager(self):
+        if self._by_league:
+            return ChampionDuplicateStatsManager
         return ChampionStatsManager
     
     def get_game_fields_required(self):
@@ -144,16 +151,16 @@ class ChampionWinrate(ChampionStats):
                 ["gameId"]
         )
 
-        return (wins/picks).fillna(0).sort_values(ascending=False)
+        return (wins/picks).fillna(0)
     
     
     
-class ChampionBanrate(ChampionStats, SpecialStats):
+class ChampionBanrate(ChampionStats, ChampionBanStats):
     """Stats for banrate per champion
     
     Count the number of times a champion is banned, divided by the number of games, then multiplied by 10 (number of players per game).
     
-    When computed per league, the strategy is to count the number of time a champion is banned by a player with a league, divided by the total number of champions banned by players in the same league, then multipled by 10.
+    When computed per league, the count is duplicated for each different player league in the game.
     
     Parameters
     ----------
@@ -161,6 +168,66 @@ class ChampionBanrate(ChampionStats, SpecialStats):
         Default at False, determine if the stats groups by league.
     """
     name = "Banrate"
+    
+    def __init__(self, team_wise = False, by_league = False):
+        self._team_wise = team_wise
+        self._by_league = by_league
+    
+    def get_keys(self):
+        return ("league","championId",) if self._by_league else ("championId",)
+    
+    def get_id_fields_required(self):
+        return ["summonerId"] if self._by_league else []
+    
+    def get_game_fields_required(self):
+        return ["gameId"]
+    
+    def get_manager(self):
+        if self._by_league:
+            return ChampionDuplicateStatsManager
+        return ChampionStatsManager
+                
+    def get_stats(self, dfs):
+        df = dfs[0]
+        df_bans = dfs[1]
+        
+        groupby = list(self.get_keys())
+        
+        game_number = (
+            df_bans.groupby(["league"])
+                .count()
+                ["gameId"]
+        ) / 10 if self._by_league else len(df_bans["gameId"].unique())
+        
+        # game_number = len(df["gameId"].unique())
+        
+        if not self._team_wise:
+            if self._by_league:
+                df_bans.drop_duplicates(subset=["gameId","championId","league"], inplace=True)
+            else:
+                df_bans.drop_duplicates(subset=["gameId","championId"], inplace=True)
+        
+        bans = (
+            df_bans.groupby(groupby)
+                .count()
+                ["gameId"]
+        )
+        
+        return (bans/game_number)
+    
+class ChampionBanCount(ChampionStats, ChampionBanStats):
+    """Stats for number of bans per champion
+    
+    Count the number of times a champion is banned, at max 1 per game.
+    
+    When computed per league, the count is duplicated for each different player league in the game.
+    
+    Parameters
+    ----------
+    by_league : boolean
+        Default at False, determine if the stats groups by league.
+    """
+    name = "Ban Count"
     
     def __init__(self, team_wise = False, by_league = False):
         self._champion_bans = []
@@ -173,52 +240,35 @@ class ChampionBanrate(ChampionStats, SpecialStats):
     def get_id_fields_required(self):
         return ["summonerId"] if self._by_league else []
     
-    def get_manager(self):
-        return ChampionStatsManager
+    def get_game_fields_required(self):
+        return ["gameId"]
     
-    def push_game(self, match_data):
+    def get_manager(self):
         if self._by_league:
-            summonerIds = {}
-            for p in match_data["participantIdentities"]:
-                summonerIds[p["participantId"]] = p["player"]["summonerId"]
-                    
-        for t in match_data["teams"]:
-            for b in t["bans"]:
-                if self._by_league:
-                    self._champion_bans.append({"gameId":match_data["gameId"], "championId":b["championId"], "summonerId": summonerIds[b["pickTurn"]]})
-                else:
-                    self._champion_bans.append({"gameId":match_data["gameId"], "championId":b["championId"]})
+            return ChampionDuplicateStatsManager
+        return ChampionStatsManager
                 
-    def get_stats(self):
+    def get_stats(self, dfs):
+        df = dfs[0]
+        df_bans = dfs[1]
+        
         groupby = list(self.get_keys())
         
-        df = pd.DataFrame(self._champion_bans)
-        
-        if self._by_league:
-            df["league"] = df["summonerId"].map(lambda x: self._rank_manager.get_rank(x))
-        
-        
-        
-        game_number = (
-            df.groupby(["league"])
-                .count()
-                ["gameId"]
-        ) if self._by_league else len(df["gameId"].unique())
-        
-        # game_number = len(df["gameId"].unique())
-        
         if not self._team_wise:
-            df.drop_duplicates(inplace=True)
+            if self._by_league:
+                df_bans.drop_duplicates(subset=["gameId","championId","league"], inplace=True)
+            else:
+                df_bans.drop_duplicates(subset=["gameId","championId"], inplace=True)
         
         bans = (
-            df.groupby(groupby)
+            df_bans.groupby(groupby)
                 .count()
                 ["gameId"]
         )
         
-        return (bans/game_number) * 10
+        return bans
     
-class ChampionPresenceRate(ChampionStats, DerivedStats):
+class ChampionPresenceRate(ChampionStats, DerivedStats, ChampionBanStats):
     """Stats for presence per champion
     
     Add banrates and pickrates. Only works if the banrate strategy is set to the default one, instead of team wise.
@@ -238,6 +288,8 @@ class ChampionPresenceRate(ChampionStats, DerivedStats):
         return ("league","championId",) if self._by_league else ("championId",)
     
     def get_manager(self):
+        if self._by_league:
+            return ChampionDuplicateStatsManager
         return ChampionStatsManager
     
     def get_game_fields_required(self):
@@ -255,8 +307,26 @@ class ChampionPresenceRate(ChampionStats, DerivedStats):
     def get_stats_required(self):
         return [ChampionPickrate, ChampionBanrate]
     
-    def get_stats(self, df, stats):
-        picks = stats[ChampionPickrate.name]
-        bans = stats[ChampionBanrate.name]
+    def get_stats(self, dfs, stats):
+        df = dfs[0]
+        df_bans = dfs[1]
         
-        return (picks + bans).fillna(0).sort_values(ascending=False)
+        df_temp = pd.DataFrame()
+        df_temp["pickrate"] = stats[ChampionPickrate.name]
+        df_temp["banrate"] = stats[ChampionBanrate.name]
+        
+        df_temp = df_temp.fillna(0)
+        
+        ban_games = (
+            df_bans.drop_duplicates(subset=["gameId","league"]).groupby(["league"])
+                .count()
+                ["gameId"]
+        ) / 10 if self._by_league else len(df_bans["gameId"].unique())
+        
+        pick_games = (
+            df.drop_duplicates(subset=["gameId","league"]).groupby(["league"])
+                .count()
+                ["gameId"]
+        ) / 10 if self._by_league else len(df["gameId"].unique())
+        
+        return (df_temp["pickrate"] +( df_temp["banrate"] * (ban_games / pick_games )))

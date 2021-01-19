@@ -1,0 +1,24 @@
+language: python
+python:
+- '3.8'
+before_install:
+- export PYTHONPATH=$PYTHONPATH:$(pwd)
+install:
+- pip install pandas
+- pip install codecov
+- pip install tox-travis
+- pip install pytest
+- pip freeze
+script:
+- tox
+after_success:
+- codecov
+deploy:
+  provider: pypi
+  user: __token__
+  distributions: sdist bdist_wheel
+  skip_existing: true
+  on:
+    branch: master
+  password:
+    secure: GMes0VUHvA3A0ra37VOhI2iP4XPBnmWJzgCziwiw2rF5Sg8fWbkdfqbemNLGRSzHrjzNDdzSYsKjj+5+ixVxg5lD/eW3peRH3RVOWUnyJRpaHoo11thbsDO4XmeXrsOO31RMwjdFLy/+dJU9F2QbIHxBSZXIBw9Z2iGZjVUBhhamYpyPVLlWVFZk0RitzOE2Q2/Qw50x77LJ53weKdduEgf6MZ8v2Fu4Rgufk+pArsv4qZrTWjwOmbgTjXC3hb1sht4z4DlxzKv359pq/XFxvuDZmjXgxm0QbrMONpO9jfTiqjmpg0DgMbAH+cRqwLqPnpp8663MV8Co4Abwduj++FJAtcAxT2PgLK/q3OhCiNyrxAqDbfI+M3e0drSyfMU8HzYQnKfs5g+4qhn/YRfQsFCPId9EPp/iWsWUWGHNj/+BH+FFe3JXaLc0pl8ZJvfxYwWbiPh+sugUHyhneOvP3X0qEwWVfFeWEid190dm4YT54RZcNKTqxk+h9jYv4Z54cacEXVrgWr9yP5E1QrxSayAsXyGZrUru90csghQab2Wp5iJyyf0gwvIOPsgY3tdkDd7x6I1mFjNSv2u0/e75tLxRrJEfeCj+/K/MXpkrKzB3ZhSqwNfUvxdUTb2JgUZ4ahVdZgKvMYceueBmfpkAdEtRyz+rpjZ69ibN4xVyZ9Y=

@@ -23,6 +23,8 @@ class Leona:
     
     def __init__(self, stats):
         
+        self._match_count = 0
+        
         self._rank_manager = RankManager()
         
         keys_managers = []
@@ -45,7 +47,7 @@ class Leona:
         keys : list of tuples
             The list of keys considered by the computed stats
         """
-        return self._stats_manager.keys()
+        return list(self._stats_manager.keys())
         
     def push_match(self, match_data):
         """Forward the raw match data from Riot API to the stats manager which will handle the stats
@@ -58,6 +60,8 @@ class Leona:
         
         for s in self._stats_manager:
             self._stats_manager[s].push_game(match_data)
+            
+        self._match_count += 1
         
         
     def push_league(self, league_data):
@@ -106,6 +110,16 @@ class Leona:
             return next(iter(self._stats_manager.values())).get_stats()
         
         return self._stats_manager[key].get_stats()
+    
+    def get_match_count(self):
+        """Return the number of matches that have been pushed
+
+        Returns
+        -------
+        match_count : int
+            Number of matches
+        """
+        return self._match_count
 
     
 class RankManager:
