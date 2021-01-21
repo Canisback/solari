@@ -21,5 +21,8 @@ from .items_rate_stats import (
 
 from .player_rates import (
     PlayerPickrate,
-    PlayerWinrate
+    PlayerWinrate,
+    PlayerPickCount,
+    PlayerWins,
+    PlayerLosses
 )
