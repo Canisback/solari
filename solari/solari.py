@@ -1,4 +1,5 @@
 from .stats.stats_managers import ChampionStatsManager, ItemStatsManager
+from .exceptions import NoMatchPushed
 
 class Leona:
     """
@@ -97,11 +98,19 @@ class Leona:
         key : tuple
             Specific key to consider when computing and returning stats.
             
+        Raises
+        ------
+        NoMatchPushed
+            If no match has been pushed (then no stats)
+        
         Returns
         -------
         stats : DataFrame or dict<key,DataFrame>
             The computed stats
         """
+        
+        if self._match_count == 0:
+            raise NoMatchPushed
         
         if key is None:
             if len(self._stats_manager) > 1:

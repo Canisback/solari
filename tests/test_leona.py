@@ -1,5 +1,6 @@
 from solari import Leona
 from solari.stats import ChampionPickrate, ChampionWinrate, ItemPickrate
+from solari.exceptions import NoMatchPushed
 
 def test_leona_no_of_stats_managers():
     l = Leona([
@@ -94,3 +95,15 @@ def test_leona_get_keys():
     
     # Two stats key results in two stats managers
     assert l.get_keys() == [("championId",),("itemId",)]
+
+def test_leona_no_match_exception():
+    l = Leona([
+        ChampionPickrate(),
+        ChampionWinrate(),
+        ItemPickrate()
+    ])
+    
+    try:
+        l.get_stats()
+    except NoMatchPushed:
+        assert True
