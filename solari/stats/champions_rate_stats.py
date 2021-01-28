@@ -249,8 +249,7 @@ class ChampionBanCount(ChampionStats, ChampionBanStats):
         return ChampionStatsManager
                 
     def get_stats(self, dfs):
-        df = dfs[0]
-        df_bans = dfs[1]
+        df, df_bans = dfs
         
         groupby = list(self.get_keys())
         
@@ -308,8 +307,7 @@ class ChampionPresenceRate(ChampionStats, DerivedStats, ChampionBanStats):
         return [ChampionPickrate, ChampionBanrate]
     
     def get_stats(self, dfs, stats):
-        df = dfs[0]
-        df_bans = dfs[1]
+        df, df_bans = dfs
         
         df_temp = pd.DataFrame()
         df_temp["pickrate"] = stats[ChampionPickrate.name]

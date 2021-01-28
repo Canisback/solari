@@ -1,4 +1,4 @@
-from .stats.stats_managers import ChampionStatsManager, ItemStatsManager
+# from .stats.stats_managers import ChampionStatsManager, ItemStatsManager
 from .exceptions import NoMatchPushed
 
 class Leona:

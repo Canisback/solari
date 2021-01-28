@@ -97,8 +97,6 @@ class ChampionStatsManager(StatsManager):
                 for i in self._id_fields:
                     ids[p["participantId"]][i] = p["player"][i]
         
-        rows = []
-        
         for p in match_data["participants"]:
             row = {f:p[f] for f in self._participant_fields}
             row.update({f:p["stats"][f] for f in self._stats_fields})
@@ -132,7 +130,7 @@ class ChampionStatsManager(StatsManager):
         for s in self._derived_stats:
             stats.update({s.name:s.get_stats(df if not issubclass(s.__class__, ChampionBanStats) else (df,df_bans), stats)})
         
-        return pd.DataFrame(stats).fillna(0)
+        return pd.DataFrame(stats).fillna(0, downcast="infer")
     
     
 class ChampionDuplicateStatsManager(StatsManager):
@@ -193,8 +191,6 @@ class ChampionDuplicateStatsManager(StatsManager):
                 for i in self._id_fields:
                     ids[p["participantId"]][i] = p["player"][i]
         
-        rows = []
-        
         for p in match_data["participants"]:
             row = {f:p[f] for f in self._participant_fields}
             row.update({f:p["stats"][f] for f in self._stats_fields})
@@ -249,7 +245,7 @@ class ChampionDuplicateStatsManager(StatsManager):
         for s in self._derived_stats:
             stats.update({s.name:s.get_stats(df_entries if not issubclass(s.__class__, ChampionBanStats) else (df_entries,df_bans_entries), stats)})
         
-        return pd.DataFrame(stats).fillna(0)
+        return pd.DataFrame(stats).fillna(0, downcast="infer")
     
     
 class ItemStatsManager(StatsManager):
@@ -304,8 +300,6 @@ class ItemStatsManager(StatsManager):
                 for i in self._id_fields:
                     ids[p["participantId"]][i] = p["player"][i]
         
-        rows = []
-        
         for p in match_data["participants"]:
             for i in ["item0","item1","item2","item3","item4","item5","item6"]:
                 if (item:= p["stats"][i]) > 0:
@@ -331,5 +325,5 @@ class ItemStatsManager(StatsManager):
         for s in self._derived_stats:
             stats.update({s.name:s.get_stats(df, stats)})
         
-        return pd.DataFrame(stats).fillna(0)
+        return pd.DataFrame(stats).fillna(0, downcast="infer")
     

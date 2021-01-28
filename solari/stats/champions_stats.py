@@ -1,4 +1,4 @@
-from .stats_types import ChampionStats, SpecialStats, DerivedStats
+from .stats_types import ChampionStats #, SpecialStats, DerivedStats
 from .stats_managers import ChampionStatsManager
 
 class ChampionGeneric(ChampionStats):

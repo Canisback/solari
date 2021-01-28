@@ -1,4 +1,4 @@
-from .stats_types import ItemStats, SpecialStats, DerivedStats
+from .stats_types import ItemStats #, SpecialStats, DerivedStats
 from .stats_managers import ItemStatsManager
 
 class ItemPickrate(ItemStats):
