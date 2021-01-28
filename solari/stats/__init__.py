@@ -26,3 +26,9 @@ from .player_rates import (
     PlayerWins,
     PlayerLosses
 )
+from .player_stats import (
+    PlayerGeneric,
+    PlayerGenericPerMin,
+    PlayerKDA,
+    PlayerKillParticipation
+)
