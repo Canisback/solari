@@ -77,7 +77,23 @@ def test_champion_generic_permin_gold(match_set_1):
     stats = l.get_stats()
     
     assert stats["goldEarnedPerMin"].loc[142] == (
-        11401 / (991/60) + 
-        16146 / (1647/60) + 
-        12102 / (1153/60)
+        11401 * 60 / 991 + 
+        16146 * 60 / 1647 + 
+        12102 * 60 / 1153
+    ) / 3
+    
+def test_champion_generic_permin_gold_with_rename(match_set_1):
+    l = Leona([
+        ChampionGenericPerMin("goldEarned", "GoldPerMin")
+    ])
+    
+    for m in match_set_1:
+        l.push_match(m)
+        
+    stats = l.get_stats()
+    
+    assert stats["GoldPerMin"].loc[142] == (
+        11401 * 60 / 991 + 
+        16146 * 60 / 1647 + 
+        12102 * 60 / 1153
     ) / 3

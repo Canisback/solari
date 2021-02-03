@@ -1,4 +1,4 @@
-class Stats:
+class Stats:# pragma: no cover
     """Abstract class defining the basis of all Stats
     
     """
@@ -79,13 +79,13 @@ class Stats:
         pass
     
 
-class ChampionStats(Stats):
+class ChampionStats(Stats):# pragma: no cover
     """Abstract class defining a Stats for Champions
     
     """
     pass
 
-class ChampionBanStats(Stats):
+class ChampionBanStats(Stats):# pragma: no cover
     """Abstract class defining a Stats for Champions bans
     
     """
@@ -107,19 +107,19 @@ class ChampionBanStats(Stats):
         """
         pass
 
-class ItemStats(Stats):
+class ItemStats(Stats):# pragma: no cover
     """Abstract class defining a Stats for Items
     
     """
     pass
 
-class PlayerStats(Stats):
+class PlayerStats(Stats):# pragma: no cover
     """Abstract class defining a Stats for Players
     
     """
     pass
 
-class SpecialStats(Stats):
+class SpecialStats(Stats):# pragma: no cover
     """Abstract class defining a Stats that will handle itself the game data
     
     """
@@ -140,7 +140,7 @@ class SpecialStats(Stats):
         """
         self._rank_manager = rank_manager
 
-class DerivedStats(Stats):
+class DerivedStats(Stats):# pragma: no cover
     """Abstract class defining a Stats that is derived from another and must be computed afterward
     
     """

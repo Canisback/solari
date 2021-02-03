@@ -164,6 +164,8 @@ class ChampionBanrate(ChampionStats, ChampionBanStats):
     
     Parameters
     ----------
+    team_wise : boolean
+        Default at False, determine if a duplciate ban should be counted.
     by_league : boolean
         Default at False, determine if the stats groups by league.
     """
@@ -224,6 +226,8 @@ class ChampionBanCount(ChampionStats, ChampionBanStats):
     
     Parameters
     ----------
+    team_wise : boolean
+        Default at False, determine if a duplciate ban should be counted.
     by_league : boolean
         Default at False, determine if the stats groups by league.
     """

@@ -1,8 +1,9 @@
 import pandas as pd
 from functools import lru_cache
 from .stats_types import SpecialStats, DerivedStats, ChampionBanStats
+from ..exceptions import MissingRequiredStats
 
-class StatsManager:
+class StatsManager: # pragma: no cover
     """Abstract class defining the basis of Stats Managers
         
     Parameters
@@ -50,6 +51,11 @@ class ChampionStatsManager(StatsManager):
     
     rank_manager : RankManager
         Manager for players rank
+        
+    Raises
+    ------
+    MissingRequiredStats
+        If a required stats from Derived Stats are missing
     """
     
     def __init__(self, stats, rank_manager):
@@ -83,6 +89,10 @@ class ChampionStatsManager(StatsManager):
         for s in self._special_stats:
             s.set_rank_manager(self._rank_manager)
         
+        # Listing all required stats for derived stats
+        derived_required = list(set([i for j in self._derived_stats for i in j.get_stats_required()]))
+        if not all([any([isinstance(s, d) for s in stats]) for d in derived_required]):
+            raise MissingRequiredStats
         
     def push_game(self, match_data):
         
@@ -145,6 +155,11 @@ class ChampionDuplicateStatsManager(StatsManager):
     
     rank_manager : RankManager
         Manager for players rank
+        
+    Raises
+    ------
+    MissingRequiredStats
+        If a required stats from Derived Stats are missing
     """
     
     def __init__(self, stats, rank_manager):
@@ -178,6 +193,12 @@ class ChampionDuplicateStatsManager(StatsManager):
         
         self._ban_stats = any([issubclass(s.__class__, ChampionBanStats) for s in stats])
         
+        # Listing all required stats for derived stats
+        derived_required = list(set([i for j in self._derived_stats for i in j.get_stats_required()]))
+        if not all([any([isinstance(s, d) for s in stats]) for d in derived_required]):
+            raise MissingRequiredStats
+            
+            
     def push_game(self, match_data):
         
         for s in self._special_stats:
@@ -260,6 +281,11 @@ class ItemStatsManager(StatsManager):
     
     rank_manager : RankManager
         Manager for players rank
+        
+    Raises
+    ------
+    MissingRequiredStats
+        If a required stats from Derived Stats are missing
     """
     
     def __init__(self, stats, rank_manager):
@@ -286,6 +312,12 @@ class ItemStatsManager(StatsManager):
         self._stats = [s for s in stats if not issubclass(s.__class__, SpecialStats) and not issubclass(s.__class__, DerivedStats)]
         self._derived_stats = sorted([s for s in stats if not issubclass(s.__class__, SpecialStats) and issubclass(s.__class__, DerivedStats)], key=lambda s: s.priority)
         self._special_stats = [s for s in stats if issubclass(s.__class__, SpecialStats)]
+        
+        # Listing all required stats for derived stats
+        derived_required = list(set([i for j in self._derived_stats for i in j.get_stats_required()]))
+        if not all([any([isinstance(s, d) for s in stats]) for d in derived_required]):
+            raise MissingRequiredStats
+        
         
     def push_game(self, match_data):
         

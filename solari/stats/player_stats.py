@@ -58,7 +58,7 @@ class PlayerGeneric(PlayerStats):
         return [self._field]
     
     def get_id_fields_required(self):
-        return ["summonerId"] if self._by_league else []
+        return ["accountId"] if self._by_accountId else ["summonerId"]
     
     def get_stats(self, df):
         groupby = list(self.get_keys())
@@ -95,7 +95,7 @@ class PlayerGenericPerMin(PlayerStats):
         self._field = field
         
         self._by_accountId = by_accountId
-        self._by_league = by_champion
+        self._by_champion = by_champion
     
     def get_keys(self):
         
@@ -122,11 +122,11 @@ class PlayerGenericPerMin(PlayerStats):
         return [self._field]
     
     def get_id_fields_required(self):
-        return ["summonerId"] if self._by_league else []
+        return ["accountId"] if self._by_accountId else ["summonerId"]
     
     def get_stats(self, df):
         groupby = list(self.get_keys())
-        df[self._field + "PerMin"] = df[self._field] / (df["gameDuration"] / 60)
+        df[self._field + "PerMin"] = df[self._field] * 60 / df["gameDuration"]
         return df.groupby(groupby).mean()[self._field + "PerMin"]
     
 
@@ -169,9 +169,6 @@ class PlayerKDA(PlayerStats):
     
     def get_game_fields_required(self):
         return ["gameId"]
-    
-    def get_participant_fields_required(self):
-        return ["championId"]
     
     def get_stats_fields_required(self):
         return ["kills","deaths","assists"]
@@ -238,7 +235,7 @@ class PlayerKillParticipation(PlayerStats):
         return ["kills","assists"]
     
     def get_id_fields_required(self):
-        return ["summonerId"] if self._by_league else []
+        return ["accountId"] if self._by_accountId else ["summonerId"]
     
     def get_stats(self, df):
         groupby = list(self.get_keys())

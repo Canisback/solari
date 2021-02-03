@@ -1,5 +1,5 @@
 from .stats_types import ChampionStats #, SpecialStats, DerivedStats
-from .stats_managers import ChampionStatsManager
+from .stats_managers import ChampionStatsManager, ChampionDuplicateStatsManager
 
 class ChampionGeneric(ChampionStats):
     """Stats for any single stats field under participants->stats
@@ -33,6 +33,8 @@ class ChampionGeneric(ChampionStats):
         return ("league","championId",) if self._by_league else ("championId",)
     
     def get_manager(self):
+        if self._by_league:
+            return ChampionDuplicateStatsManager
         return ChampionStatsManager
     
     def get_game_fields_required(self):
@@ -84,6 +86,8 @@ class ChampionGenericPerMin(ChampionStats):
         return ("league","championId",) if self._by_league else ("championId",)
     
     def get_manager(self):
+        if self._by_league:
+            return ChampionDuplicateStatsManager
         return ChampionStatsManager
     
     def get_game_fields_required(self):
@@ -100,7 +104,7 @@ class ChampionGenericPerMin(ChampionStats):
     
     def get_stats(self, df):
         groupby = list(self.get_keys())
-        df[self._field + "PerMin"] = df[self._field] / (df["gameDuration"] / 60)
+        df[self._field + "PerMin"] = df[self._field] * 60 / df["gameDuration"]
         return df.groupby(groupby).mean()[self._field + "PerMin"]
 
 class ChampionKDA(ChampionStats):
@@ -123,6 +127,8 @@ class ChampionKDA(ChampionStats):
         return ("league","championId",) if self._by_league else ("championId",)
     
     def get_manager(self):
+        if self._by_league:
+            return ChampionDuplicateStatsManager
         return ChampionStatsManager
     
     def get_game_fields_required(self):
@@ -163,6 +169,8 @@ class ChampionKillParticipation(ChampionStats):
         return ("league","championId",) if self._by_league else ("championId",)
     
     def get_manager(self):
+        if self._by_league:
+            return ChampionDuplicateStatsManager
         return ChampionStatsManager
     
     def get_game_fields_required(self):
@@ -180,8 +188,9 @@ class ChampionKillParticipation(ChampionStats):
     def get_stats(self, df):
         groupby = list(self.get_keys())
         
-        kp = df.groupby(["gameId","teamId"]).sum()["kills"]
+        tk = df.drop_duplicates(subset=["gameId","championId","teamId"]).groupby(["gameId","teamId"]).sum()["kills"]
         
-        df["kp"] = (df["kills"] + df["assists"]) / [kp.loc[(i["gameId"],i["teamId"])] for k,i in df.iterrows()]
+        df["kp"] = (df["kills"] + df["assists"]) / [tk.loc[(i["gameId"],i["teamId"])] for k,i in df.iterrows()]
+        
         
         return df.groupby(groupby).mean()["kp"]

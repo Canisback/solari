@@ -1,5 +1,6 @@
 from solari import Leona
 from solari.stats import ChampionPickrate, ChampionWinrate, ChampionPickCount, ChampionBanrate, ChampionPresenceRate, ChampionBanCount
+from solari.exceptions import MissingRequiredStats
 
 def test_champion_pickrate(match_set_2, leagues):
     l = Leona([
@@ -125,3 +126,12 @@ def test_champion_presence(match_set_2, leagues):
     
     # Samira was banned in 9 games and picked in 5 games out of 20
     assert stats["Presence"].loc[("MASTER",777)] == (5 + 9) / 20
+    
+def test_champion_presence(match_set_2, leagues):
+    try:
+        l = Leona([
+            ChampionPresenceRate(by_league=True)
+        ])
+        assert False
+    except MissingRequiredStats:
+        assert True

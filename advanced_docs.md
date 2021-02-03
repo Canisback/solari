@@ -8,16 +8,27 @@ To keep the home readme clean, more examples here.
  * **ChampionPickCount** : Number of picks for each champion. Can be processed by league.
  * **ChampionWinrate** : Winrate for each champion. Can be processed by league.
  * **ChampionBanrate** : Banrate for each champion. Can be processed by league.
+ * **ChampionBanCount** : Number of bans for each champion. Can be processed by league.
  * **ChampionPresenceRate** : Presence rate for each champion. Can be processed by league.
 ***
- * **ChampionGeneric** : Generic stats class. Must be passed a field from the  participant "stats" from the Riot API data. Can be processed by league.
- * **ChampionGenericPerMin** : Generic stats per minute class. Must be passed a field from the  participant "stats" from the Riot API data. Can be processed by league.
+ * **ChampionGeneric** : Generic stats class for champions. Must be passed a field from the participant "stats" from the Riot API data. Can be processed by league.
+ * **ChampionGenericPerMin** : Generic stats per minute class for champions. Must be passed a field from the  participant "stats" from the Riot API data. Can be processed by league.
  * **ChampionKDA** : Mean KDA for each champion. Can be processed by league.
  * **ChampionKillParticipation** : Mean Kill Participation per champion. Can be processed by league.
 ***
  * **ItemPickrate** : Pickrate for each item. Can be processed by champion and/or by league.
  * **ItemWinrate** : Winrate for each item. Can be processed by champion and/or by league.
- 
+***
+ * **PlayerPickrate** : Pickrate for each champion and player.
+ * **PlayerWinrate** : Winrate for each player. Can be processed by champion.
+ * **PlayerPickCount** : Number of picks per player and champion.
+ * **PlayerWins** : Number of wins per player. Can be processed by champion.
+ * **PlayerLosses** : Number of losses per player. Can be processed by champion.
+***
+ * **PlayerGeneric** : Generic stats class for players. Must be passed a field from the participant "stats" from the Riot API data. Can be processed by champion.
+ * **PlayerGenericPerMin** : Generic stats per minute class for players. Must be passed a field from the  participant "stats" from the Riot API data. Can be processed by champion.
+ * **PlayerKDA** : Mean KDA for each player. Can be processed by champion.
+ * **PlayerKillParticipation** : Mean Kill Participation per player. Can be processed by champion.
  
 # Examples
 
@@ -112,4 +123,23 @@ for match_data in matches:
     l.push_match(match_data)
 
 l.get_stats()
+```
+
+
+Asking for stats without pushing matches gives a specific error : 
+
+```python
+from solari import Leona
+from solari.stats import ChampionPickrate, ChampionWinrate
+from solari.exceptions import NoMatchPushed
+
+l = Leona([
+    ChampionPickrate(),
+    ChampionWinrate()
+])
+
+try:
+    l.get_stats()
+except NoMatchPushed:
+    print("Please push some matches")
 ```
