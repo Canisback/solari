@@ -7,7 +7,6 @@ install:
 - pip install pandas
 - pip install codecov
 - pip install tox-travis
-- pip install pytest
 - pip freeze
 script:
 - tox
