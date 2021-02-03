@@ -1,6 +1,8 @@
 # Solari
 
 [![PyPi](https://img.shields.io/pypi/v/solari)](https://pypi.org/project/solari/)
+[![Build Status](https://travis-ci.com/Canisback/solari.svg?branch=master)](https://travis-ci.com/Canisback/solari)
+[![codecov](https://codecov.io/gh/Canisback/solari/branch/master/graph/badge.svg?token=67SGZLZRAX)](https://codecov.io/gh/Canisback/solari)
 
 ***
 
