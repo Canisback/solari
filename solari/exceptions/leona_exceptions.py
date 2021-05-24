@@ -7,7 +7,15 @@ class NoMatchPushed(Exception):
         
 class MissingRequiredStats(Exception):
     """
-    No match pushed hence not able to compute stats
+    The computed stats needs another stats
     """
     def __init__(self):
         Exception.__init__(self, "A stats required to compute another is missing.")
+        
+class MismatchingLeona(Exception):
+    """
+    The given Leona instance has another configuration
+    """
+    def __init__(self):
+        Exception.__init__(self, " The given Leona instance has another configuration.")
+    

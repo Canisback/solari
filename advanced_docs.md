@@ -143,3 +143,46 @@ try:
 except NoMatchPushed:
     print("Please push some matches")
 ```
+
+
+You can merge two Leona instance if they have the same configuration.
+
+```python
+from solari.stats import PlayerPickrate, PlayerWinrate
+from solari import Leona
+
+l = Leona([
+    PlayerPickrate(),
+    PlayerWinrate(by_champion=True)
+])
+
+
+# Consider matches a list containing results from the Riot API match endpoint
+for match_data in match_set_2:
+    l.push_match(match_data)
+
+l2 = Leona([
+    PlayerPickrate(),
+    PlayerWinrate(by_champion=True)
+])
+
+
+# Consider matches a list containing results from the Riot API match endpoint
+for match_data in match_set_2[:11]:
+    l2.push_match(match_data)
+    
+l3 = Leona([
+    PlayerPickrate(),
+    PlayerWinrate(by_champion=True)
+])
+
+
+# Consider matches a list containing results from the Riot API match endpoint
+for match_data in match_set_2[10:]:
+    l3.push_match(match_data)
+    
+l2.merge(l3)
+
+```
+
+Both `l` and `l2` are the same after the merge.

@@ -39,6 +39,41 @@ class StatsManager: # pragma: no cover
         """
         pass
     
+    def merge(self, sm2, redundant_games=[]):
+        """Merge the data from the given StatsManager instance
+        
+        The current instance becomes the merge results
+        
+        Parameters
+        ----------
+        sm2 : StatsManager
+            Another StatsManager instance to merge with
+        redundant_games: list of gameId
+            The list of redundant games between the two instances that should be omitted
+            
+        """
+        pass
+    
+    def _same_configuration(self, sm2):
+        """Compare to another StatsManager instance to return if they have the same configuration
+        
+        Parameters
+        ----------
+        sm2 : StatsManager
+            Another StatsManager instance to compare with
+            
+            
+        Returns
+        -------
+        same_config : bool
+            Equivalence of the configuration
+        """
+        return \
+            set([type(s) for s in self._stats]) == set([type(s) for s in sm2._stats]) and \
+            set([type(s) for s in self._derived_stats]) == set([type(s) for s in sm2._derived_stats]) and \
+            set([type(s) for s in self._special_stats]) == set([type(s) for s in sm2._special_stats])
+        
+    
 class ChampionStatsManager(StatsManager):
     """Manager for Stats at Champion level
     
@@ -142,6 +177,17 @@ class ChampionStatsManager(StatsManager):
         
         return pd.DataFrame(stats).fillna(0, downcast="infer")
     
+    
+    def merge(self, sm2, redundant_games=[]):
+        if redundant_games == []:
+            self._stats_participants += sm2._stats_participants
+            self._champion_bans += sm2._champion_bans
+        else:
+            df = pd.DataFrame(sm2._stats_participants)
+            self._stats_participants += df[~df["gameId"].isin(redundant_games)].to_dict("records")
+            if len(sm2._champion_bans) > 0:
+                df = pd.DataFrame(sm2._champion_bans)
+                self._champion_bans += df[~df["gameId"].isin(redundant_games)].to_dict("records")
     
 class ChampionDuplicateStatsManager(StatsManager):
     """Manager for Stats at Champion level, duplicated by league
@@ -268,7 +314,18 @@ class ChampionDuplicateStatsManager(StatsManager):
         
         return pd.DataFrame(stats).fillna(0, downcast="infer")
     
-    
+    def merge(self, sm2, redundant_games=[]):
+        if redundant_games == []:
+            self._stats_participants += sm2._stats_participants
+            self._champion_bans += sm2._champion_bans
+        else:
+            df = pd.DataFrame(sm2._stats_participants)
+            self._stats_participants += df[~df["gameId"].isin(redundant_games)].to_dict("records")
+            if len(sm2._champion_bans) > 0:
+                df = pd.DataFrame(sm2._champion_bans)
+                self._champion_bans += df[~df["gameId"].isin(redundant_games)].to_dict("records")
+        
+        
 class ItemStatsManager(StatsManager):
     """Manager for Stats at Item level
     
@@ -359,3 +416,9 @@ class ItemStatsManager(StatsManager):
         
         return pd.DataFrame(stats).fillna(0, downcast="infer")
     
+    def merge(self, sm2, redundant_games=[]):
+        if redundant_games == []:
+            self._stats_items += sm2._stats_items
+        else:
+            df = pd.DataFrame(sm2._stats_items)
+            self._stats_items += df[~df["gameId"].isin(redundant_games)].to_dict("records")

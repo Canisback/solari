@@ -1,5 +1,7 @@
+from sortedcontainers import SortedSet
+
 # from .stats.stats_managers import ChampionStatsManager, ItemStatsManager
-from .exceptions import NoMatchPushed
+from .exceptions import NoMatchPushed, MismatchingLeona
 
 class Leona:
     """
@@ -24,7 +26,7 @@ class Leona:
     
     def __init__(self, stats):
         
-        self._match_count = 0
+        self._matches = SortedSet()
         
         self._rank_manager = RankManager()
         
@@ -62,7 +64,7 @@ class Leona:
         for s in self._stats_manager:
             self._stats_manager[s].push_game(match_data)
             
-        self._match_count += 1
+        self._matches.add(match_data["gameId"])
         
         
     def push_league(self, league_data):
@@ -109,7 +111,7 @@ class Leona:
             The computed stats
         """
         
-        if self._match_count == 0:
+        if self.get_match_count() == 0:
             raise NoMatchPushed
         
         if key is None:
@@ -128,7 +130,61 @@ class Leona:
         match_count : int
             Number of matches
         """
-        return self._match_count
+        return len(self._matches)
+    
+    
+    def merge(self, l2):
+        """Merge the data from the given Leona instance
+        
+        The current instance becomes the merge results
+        Both Leona instances need to have the same configuration
+        
+        Parameters
+        ----------
+        l2 : Leona
+            Another Leona instance to merge with
+            
+            
+        Raises
+        ------
+        MismatchingLeona
+            If the given Leona instance has another configuration
+        """
+        
+        if not self._same_configuration(l2):
+            raise MismatchingLeona()
+        
+        # Update the rank manager
+        self._rank_manager.merge(l2._rank_manager)
+        
+        redundant_matches = list(self._matches.intersection(l2._matches))
+        
+        for k in self._stats_manager.keys():
+            self._stats_manager[k].merge(l2._stats_manager[k], redundant_matches)
+            
+        self._matches = self._matches.union(l2._matches)
+    
+    def _same_configuration(self, l2):
+        """Compare to another Leona instance to return if they have the same configuration
+        
+        Parameters
+        ----------
+        l2 : Leona
+            Another Leona instance to compare with
+            
+            
+        Returns
+        -------
+        same_config : bool
+            Equivalence of the configuration
+        """
+        if not isinstance(l2, Leona):
+            raise Exception("Not a Leona instance")
+        
+        if not self._stats_manager.keys() == l2._stats_manager.keys():
+            return False
+        
+        return all([self._stats_manager[k]._same_configuration(l2._stats_manager[k]) for k in self._stats_manager.keys()])
 
     
 class RankManager:
@@ -190,3 +246,6 @@ class RankManager:
             return self._players_rank[player]
         else: 
             return "UNRANKED"
+        
+    def merge(self, rank_manager):
+        self._players_rank.update(rank_manager._players_rank)
